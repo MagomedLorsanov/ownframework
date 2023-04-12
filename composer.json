@@ -1,0 +1,15 @@
+{
+    "name": "mosalah/ownframework",
+    "autoload": {
+        "psr-4": {
+            "app\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "MagomedLorsanov",
+            "email": "lorsanov94@mail.ru"
+        }
+    ],
+    "require": {}
+}
