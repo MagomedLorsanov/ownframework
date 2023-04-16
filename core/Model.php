@@ -12,9 +12,6 @@ abstract class Model
 
     public function loadData($data)
     {
-        echo '<pre>';
-        var_dump($data);
-        echo '</pre>';
         foreach ($data as $key => $value) {
             if (property_exists($this,$key)) {
                 $this->{$key} = $value;
