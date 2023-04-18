@@ -1,7 +1,7 @@
 <?php
 namespace app\core;
 
-class Database 
+class Database
 {
     public \PDO $pdo;
     public function __construct(array $config)
@@ -16,19 +16,36 @@ class Database
     public function applyMigrations()
     {
         $this->createMigrationsTable();
-        $this->getAppliedMigrations();
-
+        $appliedMigrations = $this->getAppliedMigrations();
+    
+        $newMigrations = [];
         $files = scandir(Application::$ROOT_DIR.'/migrations');
+        $toApplymigrations = array_diff($files,$appliedMigrations);
 
-        echo '<pre>';
-        var_dump($files);
-        echo '</pre>';
+        foreach ($toApplymigrations as $migration) {
+            if ($migration ==='.' || $migration ==='..') {
+                continue;
+            }
+
+            require_once Application::$ROOT_DIR.'/migrations/'.$migration;
+            $className = pathinfo($migration, PATHINFO_FILENAME);
+            $instance = new $className();
+            echo $this->log("Applying migration $migration");
+            $instance->up();
+            echo $this->log("Applied migration $migration");
+            $newMigrations[] = $migration;
+        }
+        if(!empty($newMigrations)) {
+            $this->saveMigrations($newMigrations);
+        }else {
+            echo $this->log("All migrations are applied");
+        }
     }
 
     public function createMigrationsTable()
     {
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
-            id INT AUTO_INCREMET PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             migration VARCHAR(255),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )ENGINE=INNODB;");
@@ -39,7 +56,20 @@ class Database
         $statement = $this->pdo->prepare("SELECT migration FROM migrations");
         $statement->execute();
 
-        return $statement->fetchAll();
+        return $statement->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
+    public function saveMigrations(array $migrations)
+    {
+        $str = implode(",",array_map(fn($m) => "('$m')", $migrations));
+        $statement = $this->pdo->prepare("INSERT INTO migrations (migration) VALUE 
+        $str
+        ");
+        $statement ->execute();
+    }
+
+    protected function log($message)
+    {
+        echo '['.date('Y-m-d H:i:s'). '] - ' .$message . PHP_EOL;
     }
 }
-?>
