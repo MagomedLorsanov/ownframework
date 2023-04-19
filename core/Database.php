@@ -20,7 +20,7 @@ class Database
     
         $newMigrations = [];
         $files = scandir(Application::$ROOT_DIR.'/migrations');
-        $toApplymigrations = array_diff($files,$appliedMigrations);
+        $toApplymigrations = array_diff($files, $appliedMigrations);
 
         foreach ($toApplymigrations as $migration) {
             if ($migration ==='.' || $migration ==='..') {
@@ -61,13 +61,17 @@ class Database
 
     public function saveMigrations(array $migrations)
     {
-        $str = implode(",",array_map(fn($m) => "('$m')", $migrations));
+        $str = implode(",", array_map(fn($m) => "('$m')", $migrations));
         $statement = $this->pdo->prepare("INSERT INTO migrations (migration) VALUE 
         $str
         ");
         $statement ->execute();
     }
 
+    public function prepare($sql)
+    {
+        return $this->pdo->prepare($sql);
+    }
     protected function log($message)
     {
         echo '['.date('Y-m-d H:i:s'). '] - ' .$message . PHP_EOL;

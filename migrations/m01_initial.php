@@ -18,7 +18,9 @@ class m01_initial
 
     public function down()
     {
-        echo 'm01down'.PHP_EOL;
+        $db = \app\core\Application::$app->db;
+        $SQL = "DROP TABLE users;";
+        $db->pdo->exec($SQL);
     }
 }
 ?>
